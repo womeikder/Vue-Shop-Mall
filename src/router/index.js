@@ -1,23 +1,52 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import {useUserStore} from "@/stores/index.js";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'home',
-      component: HomeView,
+      path: '/admin/login',
+      component: () => import('@/views/admin/AdminLogin.vue')
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
+      path: '/admin/layout',
+      component: () => import('@/views/admin/AdminLayout.vue'),
+      children: [
+        {
+          path: '/admin/user',
+          component: () => import('@/views/admin/AdminUser.vue')
+        },
+        {
+          path: '/admin/category',
+          component: () => import('@/views/admin/AdminCategory.vue')
+        },
+        {
+          path: '/admin/comment',
+          component: () => import('@/views/admin/AdminComment.vue')
+        },
+        {
+          path: '/admin/order',
+          component: () => import('@/views/admin/AdminOrder.vue')
+        },
+        {
+          path: '/admin/slide',
+          component: () => import('@/views/admin/AdminSlide.vue')
+        },
+        {
+          path: '/admin/menu',
+          component: () => import('@/views/admin/AdminMenu.vue')
+        }
+      ]
+    }
+
   ],
+})
+
+router.beforeEach((to) => {
+  const userStore = useUserStore()
+  if (!userStore.token && to.path !== '/admin/login' ) return '/admin/login'
+  return true
 })
 
 export default router

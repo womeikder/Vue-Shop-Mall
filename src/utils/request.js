@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useUserStore } from '@/stores'
 import router from '@/router'
+import pMessage from "@/components/global/message/index.js";
 
 const baseURL = 'http://192.168.56.56:80/api/'
 
@@ -32,15 +33,17 @@ instance.interceptors.response.use(
         if (res.data.code === 200) {
             return res
         }
+        pMessage.error(res.data.msg)
         // 业务失败，抛出错误
         return Promise.reject(res.data)
     },
     (err) => {
         // 非默认情况，401 表示为授权，需要登录
         if (err.response?.status === 401) {
+            pMessage.error('先登陆后在浏览页面!')
             router.push('/login')
         }
-
+        pMessage.error(err.response.data.msg)
         // 错误的默认情况
         // TODO 5. 处理401错误
         return Promise.reject(err)
