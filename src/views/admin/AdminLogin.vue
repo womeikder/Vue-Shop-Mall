@@ -6,6 +6,7 @@ import {useUserStore} from "@/stores/index.js";
 import pMessage from "@/components/global/message/index.js";
 import {useRouter} from "vue-router";
 import {md5} from "js-md5";
+import {getNowUserInfo} from "@/api/admin/user.js";
 
 
 
@@ -40,7 +41,7 @@ onMounted(() => {
 })
 
 const router = useRouter()
-const token = useUserStore()
+const userStore = useUserStore()
 
 // 提交按钮，发送请求
 const submit = async (type) => {
@@ -56,6 +57,8 @@ const submit = async (type) => {
       email: formData.value.email,
       password: pass
     })
+
+
 
     // 如果标记了记住我
     if (formData.value.remember) {
@@ -78,12 +81,17 @@ const submit = async (type) => {
     }
 
     // 将后端返回的token给到pinia中在请求拦截器前会携带
-    token.setToken(res.data.data.token_type + ' ' + res.data.data.access_token)
+    userStore.setToken(res.data.data.token_type + ' ' + res.data.data.access_token)
+
+    // 获取当前登录用户的数据并且存入到token中
+    const currentUserInfo = await getNowUserInfo()
+    userStore.currentUserInfo.value = currentUserInfo.data.data
+
     // 发送消息，并跳转路由
     pMessage.success(res.data.msg)
     router.push('/admin/layout')
   } else {
-    // 登录
+    // 注册
 
     // 验证表单的数据
     if (!formData.value.agree) {
@@ -102,6 +110,8 @@ const submit = async (type) => {
       email: formData.value.email,
       password: md5(formData.value.password)
     })
+
+    console.log(res)
 
     // 跳转到登录页
     formData.value = {}
@@ -207,8 +217,8 @@ const agree = () => {
       width: 500px;
       background: white;
       position: absolute;
-      right: 295px;
-      top: 180px;
+      right: 10%;
+      top: 10%;
       border-radius: 20px;
       font-weight: bold;
       font-size: large;

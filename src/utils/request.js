@@ -30,7 +30,7 @@ instance.interceptors.response.use(
     (res) => {
         // TODO 3. 处理业务失败
         // TODO 4. 摘取核心响应数据
-        if (res.data.code === 200) {
+        if (res.data.code === 200 || res.data.code === 201) {
             return res
         }
         pMessage.error(res.data.msg)
@@ -39,9 +39,9 @@ instance.interceptors.response.use(
     },
     (err) => {
         // 非默认情况，401 表示为授权，需要登录
-        if (err.response?.status === 401) {
-            pMessage.error('先登陆后在浏览页面!')
-            router.push('/login')
+        if (err.response.data.code === 401) {
+            pMessage.error('先登陆后再浏览页面!')
+            router.push('/admin/login')
         }
         pMessage.error(err.response.data.msg)
         // 错误的默认情况

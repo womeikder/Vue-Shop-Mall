@@ -33,10 +33,6 @@ const router = createRouter({
           path: '/admin/slide',
           component: () => import('@/views/admin/AdminSlide.vue')
         },
-        {
-          path: '/admin/menu',
-          component: () => import('@/views/admin/AdminMenu.vue')
-        }
       ]
     }
 
