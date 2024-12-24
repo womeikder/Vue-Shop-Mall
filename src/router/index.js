@@ -12,6 +12,7 @@ const router = createRouter({
     {
       path: '/admin/layout',
       component: () => import('@/views/admin/AdminLayout.vue'),
+      redirect: '/admin/goods',
       children: [
         {
           path: '/admin/user',
@@ -33,6 +34,15 @@ const router = createRouter({
           path: '/admin/slide',
           component: () => import('@/views/admin/AdminSlide.vue')
         },
+        {
+          path: '/admin/goods',
+          component: () => import('@/views/admin/AdminGoods.vue')
+        },
+        {
+          path: '/admin/echarts',
+          component: () => import('@/views/admin/AdminEcharts.vue')
+        }
+
       ]
     }
 

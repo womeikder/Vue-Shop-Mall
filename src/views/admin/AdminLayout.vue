@@ -3,6 +3,13 @@
 import {onMounted, ref} from "vue";
 import Icon from "@/components/global/Icon.vue";
 import FloatBox from "@/components/global/FloatBox.vue";
+import {useRouter, useRoute} from "vue-router";
+import {getNowUserInfo, useUpdateUserInfo} from "@/api/admin/user.js";
+import BaseUrl from "@/utils/BaseUrl.js";
+import Popover from "@/components/global/Popover.vue";
+import ImgUpload from "@/components/global/ImgUpload.vue";
+import pMessage from "@/components/global/message/index.js";
+import Button from "@/components/global/Button.vue";
 
 let prefersDarkScheme = null
 let layout = null
@@ -58,9 +65,47 @@ const asideButtonOperation = (type) => {
   if (!floatBoxRef.value) return
 
   floatBoxRef.value.show()
-
 }
 
+// 用户信息
+const CurrentUserInfo = ref({})
+
+
+const menu = [
+  { id: 1, router: 'echarts', name: '大屏数据', icon: 'data-b'},
+  { id: 2, router: 'goods', name: '商品管理', icon: 'goods-start-to-ship-fill'},
+  { id: 3, router: 'order', name: '订单管理', icon: 'order'},
+  { id: 4, router: 'category', name: '分类管理', icon: 'category'},
+  { id: 5, router: 'comment', name: '评论管理', icon: 'comment'},
+  { id: 6, router: 'slide', name: '轮播管理', icon: 'img-fill'},
+  { id: 7, router: 'user', name: '用户管理', icon: 'user'},
+]
+
+const router = useRouter()
+const route = useRoute()
+// 跳转路由
+const jumpRouter = (type) => {
+  router.push(`/admin/${type}`)
+}
+
+const headerStatus = ref(null)
+
+// 获取用户的信息，并且将默认图片传入
+const imgList = ref([])
+const getUserInfo = async () => {
+  const res = await getNowUserInfo()
+  CurrentUserInfo.value = res.data
+  imgList.value.push(CurrentUserInfo.value.avatar)
+}
+getUserInfo()
+
+// 更新用户数据
+const updateUser = async (url) => {
+  CurrentUserInfo.value.avatar = url
+  const res = await useUpdateUserInfo(CurrentUserInfo.value)
+  pMessage.success(res.msg)
+  getUserInfo()
+}
 </script>
 
 <template>
@@ -69,37 +114,15 @@ const asideButtonOperation = (type) => {
       <div class="up"></div>
       <div class="medium">
         <ul>
-          <li>
-            <Icon name="goods-start-to-ship-fill" size="20"></Icon>
-            <span>商品管理</span>
+          <li v-for="(item, index) in menu" :class="{ 'aside-highlight': item.router === route.path.substring(route.path.lastIndexOf('/')+1) ? true : false }" :key="item.id" @click="jumpRouter(item.router)">
+            <Icon :name="item.icon" size="20"></Icon>
+            <span>{{ item.name}}</span>
           </li>
-          <li>
-            <Icon name="order" size="20"></Icon>
-            <span>订单管理</span>
-          </li>
-          <li>
-            <Icon name="category" size="20"></Icon>
-            <span>分类管理</span>
-          </li>
-          <li>
-            <Icon name="comment" size="20"></Icon>
-            <span>评论管理</span>
-          </li>
-          <li>
-            <Icon name="img-fill" size="20"></Icon>
-            <span>轮播管理</span>
-          </li>
-          <li>
-            <Icon name="user" size="20"></Icon>
-            <span>用户管理</span>
-          </li>
-
         </ul>
       </div>
       <div class="bottom">
-
         <div class="float-box" v-if="floatBoxStatus">
-          <FloatBox left="-1600" top="400" weight="200" ref="floatBoxRef">
+          <FloatBox left="50" top="500" weight="200" ref="floatBoxRef">
             <div v-if="!asideButton" class="asideButton">
               <button @click="light">日间模式</button>
               <button @click="night">夜晚模式</button>
@@ -122,10 +145,75 @@ const asideButtonOperation = (type) => {
     </aside>
     <section class="body">
       <header class="header">
-        <nav class="navigation"></nav>
+        <nav class="navigation">
+
+<!--          自定义的popover组件显示右上角的信息-->
+          <Popover>
+            <template #trigger>
+              <div class="avatar" data-slot="customSlot" >
+                <img :src="BaseUrl + CurrentUserInfo.avatar"  alt="" v-if="CurrentUserInfo.avatar">
+                <img src="@/assets/icons/avatar.svg" alt="" v-else>
+              </div>
+            </template>
+            <ImgUpload showSize="1" @upload-success="updateUser" :imgList="imgList"></ImgUpload>
+          </Popover>
+
+          <div class="information" @click="headerStatus(1)">
+            <Popover>
+              <template #trigger>
+                <Icon name="inform" size="20"></Icon>
+              </template>
+              test
+            </Popover>
+
+          </div>
+
+
+          <div class="user">
+            <Popover>
+              <template #trigger>
+                <Icon data-slot="customSlot" name="admin" size="20"></Icon>
+              </template>
+              <div class="user-set">
+                <p>
+                  <label>用户昵称:</label>
+                  <input type="text" v-model="CurrentUserInfo.name">
+                </p>
+
+                <p>
+                  <label>用户电话:</label>
+                  <input type="text" v-model="CurrentUserInfo.phone">
+                </p>
+
+                <p>
+                  <label>用户性别:</label>
+                  <select v-model="CurrentUserInfo.gender">
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+                  </select>
+                </p>
+
+                <p>
+                  <label>用户生日:</label>
+                  <input type="date" v-model="CurrentUserInfo.birthday">
+                </p>
+
+              </div>
+              <Button text="更改信息" type="button" color="primary" @onClicked="updateUser(null)"></Button>
+            </Popover>
+          </div>
+        </nav>
       </header>
-      <article class="main"></article>
+
+<!--      主页面-->
+      <article class="main">
+        <router-view></router-view>
+      </article>
     </section>
+  </div>
+
+  <div class="popover">
+    1111
   </div>
 </template>
 
@@ -134,26 +222,32 @@ const asideButtonOperation = (type) => {
   --background-color: #ffffff;
   --aside-color: rgba(235, 245, 254, 0.23);
   --font-color: black;
+  --header-color: rgba(175, 241, 237, 0.36)
 }
 [data-theme="dark"] {
   --background-color: rgb(12, 27, 51);
   --aside-color: rgb(20, 29, 65);
   --font-color: white;
+  --header-color: #224f75
+}
+.aside-highlight {
+  background: lightskyblue;
 }
 .layout {
   width: 100vw;
   height: 100vh;
   background: var(--background-color);
   color: var(--font-color);
+  display: flex;
   .aside {
-    width: 10%;
+    width: 8%;
     height: 100%;
     background: var(--aside-color);
     color: var(--font-color);
     border-right: 1px solid var(--background-color);
     .up {
       margin-top: 20px;
-      height: 12%;
+      height: 10%;
       width: 100%;
       background-image: url("@/assets/logo_dog.png");
       background-repeat: no-repeat;
@@ -161,7 +255,7 @@ const asideButtonOperation = (type) => {
       background-position: center;
     }
     .medium {
-      margin: 10px 0;
+      margin: 50px 0;
       width: 100%;
       ul {
         margin: 0;
@@ -171,7 +265,7 @@ const asideButtonOperation = (type) => {
           align-items: center;
           display: flex;
           justify-content: space-around;
-          margin: 33% 10px;
+          margin: 40% 10px;
           border-radius: 10px;
           cursor: pointer;
         }
@@ -187,7 +281,7 @@ const asideButtonOperation = (type) => {
       justify-content: space-around;
       align-items: center;
       text-align: center;
-
+      padding-top: 40%;
       .float-box {
         width: 200px;
         height: auto;
@@ -199,6 +293,7 @@ const asideButtonOperation = (type) => {
         background: white;
         .asideButton {
           button {
+            margin-top: 20px;
             width: 95%;
             height: 40px;
             border: none;
@@ -237,9 +332,57 @@ const asideButtonOperation = (type) => {
         background: rgba(98, 180, 210, 0.8);
       }
     }
-
+  }
+  .body {
+    width: 95%;
+    height: 100%;
+    .header {
+      width: 100%;
+      height: 4%;
+      background: var(--header-color);
+      align-items: center;
+      position: relative;
+      border-bottom-left-radius: 10px ;
+      border-bottom-right-radius: 10px;
+      .navigation {
+        width: 100px;
+        position: absolute;
+        right: 10px;
+        margin-right: 2%;
+        display: flex;
+        margin-top: 5px;
+        justify-content: space-between;
+        //background: lightskyblue;
+        .information, .user, .avatar {
+          width: 30px;
+          height: 30px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border-radius: 50%;
+          transition: background-color 0.5s;
+          img {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+          }
+        }
+        .information:hover, .user:hover, .avatar:hover {
+          background: rgba(159, 195, 229, 0.8);
+        }
+      }
+    }
   }
 }
 
-
+.user-set {
+  width: 300px;
+  line-height: 30px;
+  input {
+    border-radius: 5px;
+    width: 200px;
+    height: 30px;
+    margin-left: 10px;
+  }
+}
 </style>

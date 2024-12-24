@@ -1,12 +1,13 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import Dialog from "@/components/global/Dialog.vue";
-import {AdminLogin, AdminRegister} from "@/api/admin/login.js";
+import {AdminLogin, AdminRegister, LoginMsgCode} from "@/api/admin/login.js";
 import {useUserStore} from "@/stores/index.js";
 import pMessage from "@/components/global/message/index.js";
 import {useRouter} from "vue-router";
 import {md5} from "js-md5";
 import {getNowUserInfo} from "@/api/admin/user.js";
+import Button from "@/components/global/Button.vue";
 
 
 
@@ -24,7 +25,8 @@ const formData = ref({
   password: '',
   rePassword: '',
   remember: false,
-  agree: false
+  agree: false,
+  code: ''
 })
 
 // 在页面渲染完成后将本地存储的密码邮箱给到表单中
@@ -55,7 +57,8 @@ const submit = async (type) => {
     // 发送请求
     const res  = await AdminLogin({
       email: formData.value.email,
-      password: pass
+      password: pass,
+      code: formData.value.code
     })
 
 
@@ -81,15 +84,15 @@ const submit = async (type) => {
     }
 
     // 将后端返回的token给到pinia中在请求拦截器前会携带
-    userStore.setToken(res.data.data.token_type + ' ' + res.data.data.access_token)
+    userStore.setToken(res.data.token_type + ' ' + res.data.access_token)
 
     // 获取当前登录用户的数据并且存入到token中
     const currentUserInfo = await getNowUserInfo()
-    userStore.currentUserInfo.value = currentUserInfo.data.data
+    userStore.currentUserInfo.value = currentUserInfo.data
 
     // 发送消息，并跳转路由
-    pMessage.success(res.data.msg)
     router.push('/admin/layout')
+    pMessage.success(res.msg)
   } else {
     // 注册
 
@@ -111,13 +114,11 @@ const submit = async (type) => {
       password: md5(formData.value.password)
     })
 
-    console.log(res)
-
     // 跳转到登录页
     formData.value = {}
     status.value = true
 
-    pMessage.success(res.data.msg)
+    pMessage.success(res.msg)
   }
 
 }
@@ -131,6 +132,12 @@ const clause = () => {
 const agree = () => {
   formData.value.agree = true
 }
+
+const sendCode = async () => {
+  await LoginMsgCode(formData.value.email)
+  pMessage.success('验证码发送成功!')
+}
+
 </script>
 
 <template>
@@ -145,6 +152,11 @@ const agree = () => {
           <input id="email" type="email" v-model.trim="formData.email" required>
           <label>密码</label>
           <input id="password" type="password" v-model.trim="formData.password" required pattern="^\S*(?=\S{6,})(?=\S*\d)(?=\S*[a-z])\S*$">
+          <label>验证码</label>
+          <div class="code">
+            <input id="code" type="text" v-model.trim="formData.code" required>
+            <Button class="btn" @onClicked="sendCode" text="发送验证码" color="primary" width="120" type="button"></Button>
+          </div>
           <div class="tips">
             <div class="remember">
               <input type="checkbox" v-model="formData.remember">
@@ -182,7 +194,7 @@ const agree = () => {
               <a @click="change">在此登录</a>
             </div>
           </div>
-          <button class="submit" type="submit">注册</button>
+          <button class="submit" type="submit" color="primary">注册</button>
         </form>
         <Dialog @agree="agree" title="服务条款" ref="DialogRef" button="我同意">
           <span>
@@ -223,6 +235,18 @@ const agree = () => {
       font-weight: bold;
       font-size: large;
       .login, .register {
+        .code {
+          width: 90%;
+          display: flex;
+          justify-content: center;
+          margin-left: 25px;
+          .btn {
+            margin-left: 10px;
+            text-align: center;
+            font-size: small;
+            margin-top: 25px ;
+          }
+        }
         h1 {
           text-align: center;
         }

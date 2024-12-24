@@ -13,3 +13,10 @@ export const AdminRegister = (data) => {
         ...data
     })
 }
+
+// 发送验证码
+export const LoginMsgCode = (data) => {
+    return request.post('auth/login/code', {
+        email: data
+    })
+}

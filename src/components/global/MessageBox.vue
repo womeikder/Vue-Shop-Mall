@@ -4,7 +4,7 @@ import {ref, onMounted, onBeforeUnmount, nextTick} from "vue";
 const props = defineProps({
   title: {
     type: String,
-    required: true
+    default: '提示'
   },
   button: {
     type: String,
@@ -12,12 +12,17 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['agree']);
+const emit = defineEmits(['confirm','cancel']);
 
-const agree = () => {
-  emit('agree');
+const confirm = () => {
+  emit('confirm');
   close();
 };
+const cancel = () => {
+  emit('cancel')
+}
+
+
 
 // 使用 ref 引用 DOM 元素
 const overlayRef = ref(null);
@@ -55,6 +60,7 @@ const show = () => {
 
 const close = () => {
   isVisible.value = false;
+  cancel()
 };
 
 defineExpose({
@@ -75,7 +81,7 @@ defineExpose({
         <slot></slot>
       </section>
       <footer>
-        <button class="submit" @click="agree">{{ props.button }}</button>
+        <button class="submit" @click="confirm">{{ props.button }}</button>
         <button class="cancel" @click="close">取消</button>
       </footer>
     </div>
@@ -136,7 +142,8 @@ header p:nth-child(2):hover {
 }
 
 section {
-  margin: 10px 10px;
+  margin: 50px 20px;
+  color: gray;
 }
 
 button {
@@ -145,12 +152,12 @@ button {
   background: #486FF8;
   border: none;
   border-radius: 5px;
-  margin-right: 20px;
-  margin-top: 20px;
-  margin-bottom: 15px;
+  margin: 20px 20px;
   float: right;
   transition: all 0.5s;
   cursor: pointer;
+  color: white;
+  font-size: medium;
 }
 
 button:hover {
