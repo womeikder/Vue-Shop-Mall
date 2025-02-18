@@ -15,6 +15,7 @@ import ImgUpload from "@/components/global/ImgUpload.vue";
 import pMessage from "@/components/global/message/index.js";
 import MessageBox from "@/components/global/MessageBox.vue";
 
+
 // 查询参数
 const formData = ref({
   status: null,
@@ -56,6 +57,7 @@ const getGoodsList = async (item) => {
     pageNum: res.data.current_page,
     pageSize: res.data.per_page
   }
+  
 
   // 格式化数据
   DataList.value = GoodsList.value.map(item => ({
@@ -174,7 +176,6 @@ const del = async () => {
 </script>
 
 <template>
-  <div class="title">商品详情</div>
   <div class="container">
     <div class="header">
       <form @submit.prevent="getGoodsList(null)">
@@ -329,22 +330,21 @@ const del = async () => {
 </template>
 
 <style scoped lang="scss">
-.title {
-  font-size: 50px;
-  font-weight: bold;
-  width: 100%;
-  border-bottom: 1px solid gray;
-}
-
 .container {
   width: 100%;
   height: 100vh;
 }
 
 .header {
-  width: 80%;
+  width: 97%;
   padding: 10px;
   margin-top: 10px;
+  border: 1px solid #ffffff;
+  border-radius: 10px;
+  background: white;
+  margin: 0 auto;
+  box-shadow: 0 0 5px #dadada;
+
 
   form {
     display: flex;
@@ -352,18 +352,21 @@ const del = async () => {
     align-items: center;
 
     input[type="text"] {
-      border: 1px solid grey;
+      border: 1px solid rgb(211, 210, 210);
       border-radius: 5px;
       width: 20%;
       height: 30px;
       margin-right: 1%;
+      color: #c2c1c1;
     }
 
     select {
+      border: 1px solid rgb(211, 210, 210);
       border-radius: 5px;
       width: 10%;
       height: 30px;
       margin-right: 1%;
+      color: #c2c1c1;
     }
 
     .checkbox {
@@ -371,7 +374,7 @@ const del = async () => {
     }
 
     label {
-      margin-right: 5px;
+      margin-right: 10px;
     }
   }
 }

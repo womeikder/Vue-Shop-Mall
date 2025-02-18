@@ -1,6 +1,6 @@
 // 用户模块 token setToken removeToken
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import {ref} from "vue"
 
 export const useUserStore = defineStore(
   'user',
@@ -17,14 +17,12 @@ export const useUserStore = defineStore(
       const removeToken = () => {
           token.value = ''
       }
-
-
       // 将数据暴露
       return {
           token,
           setToken,
           removeToken,
-          currentUserInfo
+          currentUserInfo,
       }
   },
   // 设置pinia持久化更新

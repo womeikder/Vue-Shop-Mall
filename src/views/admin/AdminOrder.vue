@@ -1,11 +1,11 @@
 <script setup>
-import {ref, watch} from "vue";
+import { ref, watch } from "vue";
 import Button from "@/components/global/Button.vue";
 import Table from "@/components/global/Table.vue";
 import Dialog from "@/components/global/Dialog.vue";
-import {useGetOrderList, useOrderDetail, useOrderPost} from "@/api/admin/order.js";
+import { useGetOrderList, useOrderDetail, useOrderPost } from "@/api/admin/order.js";
 import pMessage from "@/components/global/message/index.js";
-import {useUserList} from "@/api/admin/user.js";
+import { useUserList } from "@/api/admin/user.js";
 
 // 表头
 const column = ref([
@@ -27,10 +27,12 @@ const query = ref({
   page: null,
 })
 const statusEmu = ref({
-  1: '已下单',
-  2: '已支付',
-  3: '已发货',
-  4: '已收货'
+  1: '待付款',
+  2: '待发货',
+  3: '待收货',
+  4: '待评价',
+  5: '已完成',
+  6: '已取消'
 })
 
 const getUserList = async () => {
@@ -86,15 +88,18 @@ const postConfirm = async () => {
 
 const orderDetailRef = ref()
 const orderDetail = ref({})
+const userName = ref('')
 const detail = async (item) => {
   const res = await useOrderDetail(item.id)
   orderDetail.value = res.data[0]
   orderDetailRef.value.show()
+  userName.value = orderDetail.value.user.name
 }
+
+
 </script>
 
 <template>
-  <div class="title">订单详情</div>
   <div class="container">
     <div class="header">
       <form @submit.prevent="getDataList(null)">
@@ -107,7 +112,7 @@ const detail = async (item) => {
         <label>根据状态查询: </label>
         <select v-model="query.status">
           <option value="null">状态</option>
-          <option :value="parseInt(index)"  v-for="(item,index) in statusEmu">{{ item }}</option>
+          <option :value="parseInt(index)" v-for="(item, index) in statusEmu">{{ item }}</option>
         </select>
 
         <Button style="margin-right: 5px" text="搜索" color="primary" type="submit"></Button>
@@ -117,19 +122,20 @@ const detail = async (item) => {
 
     <div class="data-display">
       <!--      自定义表格-->
-      <Table
-          class="table"
-          :data="tableData"
-          :index="true"
-          :useIndex="useIndex"
-          :column="column"
-          :page="paginateList"
-          editBtn="发货"
-          delBtn="详情"
-          @paginate="getDataList"
-          @edit="post"
-          @del="detail"
-      ></Table>
+      <Table 
+        class="table" 
+        :data="tableData" 
+        :index="true" 
+        :useIndex="useIndex" 
+        :column="column" 
+        :page="paginateList"
+        editBtn="发货" 
+        delBtn="详情" 
+        @paginate="getDataList" 
+        @edit="post" 
+        @del="detail"
+        >
+      </Table>
     </div>
   </div>
   <Dialog title="发货信息" ref="postDialogRef" @agree="postConfirm">
@@ -151,7 +157,7 @@ const detail = async (item) => {
       <span v-if="orderDetail.address">收货地址: {{ orderDetail.address }}</span>
       <span v-if="orderDetail.express_type">快递公司: {{ orderDetail.express_type }}</span>
       <span v-if="orderDetail.express_no">快递单号: {{ orderDetail.express_no }}</span>
-      <span>下单用户: {{ orderDetail.user }}</span>
+      <span>下单用户: {{ userName }}</span>
       <span>交易单号: {{ orderDetail.trade_no }}</span>
       <span v-if="orderDetail.pay_type">支付类型: {{ orderDetail.pay_type }}</span>
       <span v-if="orderDetail.pay_time">支付时间: {{ orderDetail.pay_time }}</span>
@@ -170,17 +176,23 @@ const detail = async (item) => {
 </template>
 
 <style scoped lang="scss">
+.container {
+  width: 100%;
+  height: 100vh;
+}
 
 .post-dialog {
   label {
     margin: 20px;
   }
+
   select {
     width: 200px;
     height: 30px;
     border-radius: 3px;
     border: 1px solid #d7d7d7;
   }
+
   input {
     width: 300px;
     height: 30px;
@@ -193,6 +205,7 @@ const detail = async (item) => {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 30px;
+
   span {
     font-size: large;
     color: #606060;
@@ -200,11 +213,13 @@ const detail = async (item) => {
   }
 
 }
+
 .item-detail {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 30px;
   margin-bottom: 50px;
+
   span {
     font-size: large;
     color: #606060;
@@ -213,31 +228,33 @@ const detail = async (item) => {
 }
 
 .header {
-  margin-top: 10px;
-  width: 80%;
+  width: 97%;
   padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ffffff;
+  border-radius: 10px;
+  background: white;
+  margin: 0 auto;
+  box-shadow: 0 0 5px #dadada;
+
 
   form {
     display: flex;
     justify-content: left;
     align-items: center;
+
     select {
+      border: 1px solid rgb(211, 210, 210);
       border-radius: 5px;
       width: 10%;
       height: 30px;
       margin-right: 1%;
+      color: #c2c1c1;
     }
+
     label {
       margin-right: 10px;
     }
   }
-}
-
-.title {
-  font-size: 50px;
-  font-weight: bold;
-  width: 100%;
-  border-bottom: 1px solid gray;
-
 }
 </style>

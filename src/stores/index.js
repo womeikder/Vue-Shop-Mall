@@ -9,3 +9,5 @@ export default pinia
 
 // * 将modules下某个仓库方法全部导出
 export * from './modules/user.js'
+export * from './modules/admin/routerName.js'
+export * from './modules/web/historySearch.js'

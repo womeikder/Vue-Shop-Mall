@@ -62,7 +62,7 @@ defineExpose({ state, open, close });
 .pMessage {
   --base_color: v-bind(color);
 
-  color: #f3f3f3;
+  color: #636363;
   font-weight: bold;
   width: 500px;
   height: 50px;

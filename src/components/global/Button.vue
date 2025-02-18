@@ -56,7 +56,7 @@ const onClicked = () => {
   <div class="button">
     <button
         @click="onClicked"
-        :style="{ width: `${props.width}px`, height: `${props.height}px`, backgroundColor: buttonColor }"
+        :style="{ backgroundColor: buttonColor }"
         :type="props.type"
     >
       {{ props.text }}
@@ -70,6 +70,8 @@ const onClicked = () => {
 }
 
 .button button {
+  height: 35px;
+  align-content: center;
   padding: 0 10px;
   border-radius: 7px;
   border: none;

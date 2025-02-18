@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {ref, watch} from 'vue';
 import {getOssToken} from '@/api/admin/user.js';
 import {v4 as uuidv4} from 'uuid';
 import pMessage from '@/components/global/message/index.js';
@@ -67,10 +67,21 @@ const generateUUIDFileName = (originalFileName) => {
 // 照片墙相关逻辑
 const fileList = ref([]);
 
+// console.log('props.imgList:', props.imgList);
+
 // 传入的默认值图片，赋值给数组
-props.imgList.forEach((item) => {
-  fileList.value.push({'preview': BaseUrl + item})
+watch(props.imgList, (newValue) => {
+    props.imgList.forEach((item) => {
+      if (fileList.value.length >= props.showSize) {
+          fileList.value.shift()
+      }
+    fileList.value.push({'preview': BaseUrl + item})
+  })
+}, {
+  deep: true,
+  immediate: true // 初始化时立即执行
 })
+
 
 const imgDialog = ref(null);
 const dialogShowUrl = ref('');
@@ -144,7 +155,6 @@ const handleFileUpload = (fileObj) => {
 <style scoped>
 .photo-wall {
   display: flex;
-  //flex-wrap: wrap;
   justify-content: center;
 }
 

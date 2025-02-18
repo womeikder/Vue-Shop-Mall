@@ -1,6 +1,6 @@
 <script setup>
 
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import Icon from "@/components/global/Icon.vue";
 import FloatBox from "@/components/global/FloatBox.vue";
 import {useRouter, useRoute} from "vue-router";
@@ -72,7 +72,7 @@ const CurrentUserInfo = ref({})
 
 
 const menu = [
-  { id: 1, router: 'echarts', name: '大屏数据', icon: 'data-b'},
+  { id: 1, router: 'index', name: '首页', icon: 'data-b'},
   { id: 2, router: 'goods', name: '商品管理', icon: 'goods-start-to-ship-fill'},
   { id: 3, router: 'order', name: '订单管理', icon: 'order'},
   { id: 4, router: 'category', name: '分类管理', icon: 'category'},
@@ -95,7 +95,7 @@ const imgList = ref([])
 const getUserInfo = async () => {
   const res = await getNowUserInfo()
   CurrentUserInfo.value = res.data
-  imgList.value.push(CurrentUserInfo.value.avatar)
+  imgList.value.push(CurrentUserInfo.value.avatar) 
 }
 getUserInfo()
 
@@ -106,6 +106,22 @@ const updateUser = async (url) => {
   pMessage.success(res.msg)
   getUserInfo()
 }
+
+const headerName = ref('首页')
+watch(route, () => {
+  menu.map((item) => {
+    if (item.router === route.path.substring(route.path.lastIndexOf('/')+1)) {
+      headerName.value = item.name
+    }
+  })
+})
+
+// 退出登录
+const logout = () => {
+  router.push('/admin/login')
+  localStorage.clear()
+}
+
 </script>
 
 <template>
@@ -145,7 +161,13 @@ const updateUser = async (url) => {
     </aside>
     <section class="body">
       <header class="header">
-        <nav class="navigation">
+        <div class="logo">
+          <Icon name="online-shop" size="30"></Icon>
+          <div class="header-name">
+            {{ headerName }}
+          </div>
+        </div>
+        <div class="navigation">
 
 <!--          自定义的popover组件显示右上角的信息-->
           <Popover>
@@ -199,10 +221,11 @@ const updateUser = async (url) => {
                 </p>
 
               </div>
-              <Button text="更改信息" type="button" color="primary" @onClicked="updateUser(null)"></Button>
+              <Button text="更改信息" type="button" color="primary" @onClicked="updateUser(null)" style="margin-right: 30%;"></Button>
+              <Button text="退出登录" type="button" color="info" @onClicked="logout"></Button>
             </Popover>
           </div>
-        </nav>
+        </div>
       </header>
 
 <!--      主页面-->
@@ -211,13 +234,12 @@ const updateUser = async (url) => {
       </article>
     </section>
   </div>
-
-  <div class="popover">
-    1111
-  </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
+:root{
+  overflow: hidden;
+}
 [data-theme="light"] {
   --background-color: #ffffff;
   --aside-color: rgba(235, 245, 254, 0.23);
@@ -239,6 +261,8 @@ const updateUser = async (url) => {
   background: var(--background-color);
   color: var(--font-color);
   display: flex;
+  overflow: hidden;
+  
   .aside {
     width: 8%;
     height: 100%;
@@ -265,7 +289,7 @@ const updateUser = async (url) => {
           align-items: center;
           display: flex;
           justify-content: space-around;
-          margin: 40% 10px;
+          margin: 20% 10px;
           border-radius: 10px;
           cursor: pointer;
         }
@@ -344,15 +368,28 @@ const updateUser = async (url) => {
       position: relative;
       border-bottom-left-radius: 10px ;
       border-bottom-right-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      .logo {
+        width: 130px;
+        display: flex;
+        justify-content: space-between;
+        margin-left: 10px;
+        .header-name {
+          align-content: center;
+          font-size: larger;
+          font-weight: bold;
+          font-family:cursive
+        }
+      }
+
       .navigation {
         width: 100px;
-        position: absolute;
-        right: 10px;
         margin-right: 2%;
         display: flex;
         margin-top: 5px;
         justify-content: space-between;
-        //background: lightskyblue;
+
         .information, .user, .avatar {
           width: 30px;
           height: 30px;
@@ -384,5 +421,10 @@ const updateUser = async (url) => {
     height: 30px;
     margin-left: 10px;
   }
+}
+.main {
+  padding-top: 20px;
+  height: 100vh;
+  background: #F7FAFC;
 }
 </style>

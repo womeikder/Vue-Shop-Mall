@@ -1,0 +1,117 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f9;
+  }
+  
+  .login-box {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 350px;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  label {
+    margin-bottom: 5px;
+    color: #555;
+  }
+  
+  input {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  .code {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px; // 添加间距
+  }
+  
+  .code-input {
+      flex: 1;
+      margin-right: 10px;
+  }
+  
+  .btn {
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px; // 确保按钮字体大小与输入框一致
+  }
+  
+  .btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .tips {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .remember, .agree, .change {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .remember input, .agree input {
+    margin-top: 15px;
+    margin-right: 5px;
+  }
+  
+  .change a, .agree a {
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  
+  .change a:hover {
+    text-decoration: underline;
+  }
+  
+  .submit {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .submit:hover {
+    background-color: #0056b3;
+  }

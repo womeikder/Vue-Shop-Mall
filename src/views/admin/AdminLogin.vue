@@ -7,7 +7,6 @@ import pMessage from "@/components/global/message/index.js";
 import {useRouter} from "vue-router";
 import {md5} from "js-md5";
 import {getNowUserInfo} from "@/api/admin/user.js";
-import Button from "@/components/global/Button.vue";
 
 
 
@@ -52,13 +51,20 @@ const submit = async (type) => {
 
     // 先获取存储中的数据，如果表单相同就证明是已经加密过的数据，不需要再次加密
     const loginInfo = JSON.parse(localStorage.getItem('loginInfo'))
-    let pass = loginInfo.password === formData.value.password ? formData.value.password : md5(formData.value.password)
+    let pass = null
+    if (loginInfo && loginInfo.password === formData.value.password) {
+      pass = formData.value.password
 
+    } else {
+      pass = md5(formData.value.password)
+    }
+    
     // 发送请求
     const res  = await AdminLogin({
       email: formData.value.email,
       password: pass,
-      code: formData.value.code
+      code: formData.value.code,
+      type: 1
     })
 
 
@@ -68,7 +74,12 @@ const submit = async (type) => {
 
       // 也是判断数据的相同性来决定是否加密
       const getLoginInfo = JSON.parse(localStorage.getItem('loginInfo'))
-      let pass = getLoginInfo.password === formData.value.password ? formData.value.password : md5(formData.value.password)
+      let pass = null
+      if (getLoginInfo && getLoginInfo.password === formData.value.password) {
+        pass = formData.value.password
+      } else {
+        pass = md5(formData.value.password)
+      }
 
       // 设置7天的过期时间
       const now = new Date();
@@ -91,7 +102,7 @@ const submit = async (type) => {
     userStore.currentUserInfo.value = currentUserInfo.data
 
     // 发送消息，并跳转路由
-    router.push('/admin/layout')
+    router.push('/admin/index')
     pMessage.success(res.msg)
   } else {
     // 注册
@@ -133,9 +144,20 @@ const agree = () => {
   formData.value.agree = true
 }
 
+const checktext = ref()
+const timer = ref(60)
 const sendCode = async () => {
   await LoginMsgCode(formData.value.email)
   pMessage.success('验证码发送成功!')
+  const interval = setInterval(() => {
+    timer.value--
+    checktext.value = `${timer.value}秒后重试`
+    if (timer.value === 0) {
+      timer.value = 60
+      checktext.value = null
+      clearInterval(interval)
+    }
+  }, 1000)
 }
 
 </script>
@@ -151,11 +173,12 @@ const sendCode = async () => {
           <label>邮箱</label>
           <input id="email" type="email" v-model.trim="formData.email" required>
           <label>密码</label>
-          <input id="password" type="password" v-model.trim="formData.password" required pattern="^\S*(?=\S{6,})(?=\S*\d)(?=\S*[a-z])\S*$">
+          <input id="password"  type="password" v-model.trim="formData.password" required pattern="^\S*(?=\S{6,})(?=\S*\d)(?=\S*[a-z])\S*$">
           <label>验证码</label>
           <div class="code">
-            <input id="code" type="text" v-model.trim="formData.code" required>
-            <Button class="btn" @onClicked="sendCode" text="发送验证码" color="primary" width="120" type="button"></Button>
+            <input class="code-input" id="code" type="text" v-model.trim="formData.code" required>
+            <button class="btn" v-if="timer === 60" @click="sendCode" @keyup="sendCode" type="button">发送验证码</button>
+            <button class="btn" disabled v-else type="button">{{ checktext }}</button>
           </div>
           <div class="tips">
             <div class="remember">
@@ -215,109 +238,18 @@ const sendCode = async () => {
     </div>
   </div>
 </template>
-`
-<style scoped>
-  .container {
-    width: 100vw;
-    height: 100vh;
-    background-image: url("@/assets/admin/login_background.png");
-    background-repeat: no-repeat;
-    background-size: cover;
-    position: relative;
-    .login-box {
-      margin: auto 0;
-      width: 500px;
-      background: white;
-      position: absolute;
-      right: 10%;
-      top: 10%;
-      border-radius: 20px;
-      font-weight: bold;
-      font-size: large;
-      .login, .register {
-        .code {
-          width: 90%;
-          display: flex;
-          justify-content: center;
-          margin-left: 25px;
-          .btn {
-            margin-left: 10px;
-            text-align: center;
-            font-size: small;
-            margin-top: 25px ;
-          }
-        }
-        h1 {
-          text-align: center;
-        }
-        form {
-          margin: 50px 20px;
-          input {
-            margin: 20px auto;
-            display: block;
-            height: 40px;
-            width: 400px;
-            border-radius: 5px;
-            font-size: larger;
-          }
-          .tips {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            .remember {
-              input {
-                height: 20px;
-                width: 20px;
-                margin-left: 20px;
-                margin-right: 20px;
-                display: inline-block;
-              }
-            }
-            .agree {
-              input {
-                height: 20px;
-                width: 20px;
-                margin-left: 20px;
-                margin-right: 20px;
-                display: inline-block;
-              }
 
-              a {
-                color: #486FF8;
-                cursor: pointer;
-              }
-
-              a:hover {
-                color: #0532dc;
-                font-weight: bold;
-              }
-            }
-            .change {
-              margin-right: 20px;
-              a {
-                color: #486FF8;
-                cursor: pointer;
-              }
-              a:hover {
-                color: #0532dc;
-                font-weight: bold;
-              }
-            }
-          }
-          .submit {
-            width: 450px;
-            height: 50px;
-            background: #486FF8;
-            border: none;
-            border-radius: 5px;
-            margin: 0 auto;
-            transition: all 1s;
-          }
-          .submit:hover {
-            box-shadow: 0 0 20px gray;
-          }
-        }
-      }
-    }
-  }
+<style lang="scss" scoped>
+@import url("../../assets/css/login.scss");
+.container {
+  background-image: url("@/assets/admin/login_background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+}
+.login-box {
+  position: absolute;
+  right: 10%;
+  top: 10%;
+}
 </style>

@@ -52,6 +52,14 @@ instance.interceptors.response.use(
         if (res.data.code === 200 || res.data.code === 201) {
             return res.data
         }
+        if (res.data.code === 401) {
+            pMessage.error('先登陆后再浏览页面!')
+            if (res.config.url.includes('admin')) {
+                router.push('/admin/login')
+            } else if (res.config.url.includes('web')) {
+                router.push('/web/login')
+            }
+        }
         pMessage.error(res.data.msg)
         // 业务失败，抛出错误
         return Promise.reject(res.data)
@@ -62,7 +70,7 @@ instance.interceptors.response.use(
         if (loading) {
             pLoading.close()
         }
-        if (err.response.data.code === 401) {
+        if (err.response.code === 401) {
             pMessage.error('先登陆后再浏览页面!')
             router.push('/admin/login')
         }

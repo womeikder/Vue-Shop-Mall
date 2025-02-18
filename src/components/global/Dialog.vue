@@ -69,20 +69,20 @@ defineExpose({
     <div class="dialog" :class="{ 'hidden': !isVisible }" ref="dialogRef">
       <header>
         <p>{{ props.title }}</p>
-        <p @click="close">X</p>
+        <p @click="close">x</p>
       </header>
       <section>
         <slot></slot>
       </section>
       <footer>
+        <button class="cancel" @click="close" >取消</button>
         <button class="submit" @click="agree">{{ props.button }}</button>
-        <button class="cancel" @click="close">取消</button>
       </footer>
     </div>
   </Teleport>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .hidden {
   display: none;
 }
@@ -93,8 +93,8 @@ defineExpose({
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.1); /* 半透明黑色背景 */
-  z-index: 9995; /* 确保遮罩层在最上层 */
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9995;
 }
 
 .dialog {
@@ -103,58 +103,85 @@ defineExpose({
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 9998;
-  border: none;
-  border-radius: 10px;
-  background: white;
-  box-shadow: 0 0 10px gray;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 20px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
 }
 
 header {
   display: flex;
   justify-content: space-between;
-  margin: 1px 10px;
-  border-bottom: 1px solid #d2d0d0;
-}
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
 
-header p {
-  font-size: larger;
-  font-weight: bold;
-}
+  p {
+    font-size: 18px;
+    margin: 0;
 
-header p:nth-child(2) {
-  float: right;
-  cursor: pointer;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  text-align: center;
-}
+    &:nth-child(2) {
+      cursor: pointer;
+      color: #888;
+      font-size: 16px;
 
-header p:nth-child(2):hover {
-  background: black;
-  color: white;
-  transition: all 0.5s;
+      &:hover {
+        color: #007bff;
+      }
+    }
+  }
 }
 
 section {
-  margin: 10px 10px;
+  margin-bottom: 20px;
 }
 
-button {
-  width: 100px;
-  height: 40px;
-  background: #486FF8;
-  border: none;
-  border-radius: 5px;
-  margin-right: 20px;
-  margin-top: 20px;
-  margin-bottom: 15px;
-  float: right;
-  transition: all 0.5s;
-  cursor: pointer;
-}
+footer {
+  display: flex;
+  justify-content: flex-end;
 
-button:hover {
-  box-shadow: 0 0 20px gray;
+  button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    margin-left: 10px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+
+    &.cancel {
+      background-color: #f8f9fa;
+      color: #007bff;
+      border: 1px solid #007bff;
+
+      &:hover {
+        background-color: #e9ecef;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    &.submit {
+      background-color: #007bff;
+      color: #fff;
+      border: 1px solid #007bff;
+
+      &:hover {
+        background-color: #0056b3;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
 }
 </style>

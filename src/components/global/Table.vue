@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref, toRef, toRefs, watch} from "vue";
+import {computed, onMounted, ref, toRef, toRefs, watch, onUnmounted} from "vue";
 import Button from "@/components/global/Button.vue";
 import Icon from "@/components/global/Icon.vue";
 import Dialog from "@/components/global/Dialog.vue";
@@ -122,6 +122,38 @@ const LookImg = (url) => {
   imgDialog.value.show()
 }
 
+// 修改tooltip显示方法
+const showTooltip = (event, content) => {
+  // 如果内容为空，不显示tooltip
+  if (!content) return;
+  
+  // 先清除可能存在的tooltip
+  hideTooltip();
+  
+  const tooltip = document.createElement('div');
+  tooltip.className = 'global-tooltip'; // 修改class名称
+  tooltip.textContent = content;
+  document.body.appendChild(tooltip);
+  
+  // 获取单元格位置
+  const rect = event.target.getBoundingClientRect();
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  
+  // 计算tooltip位置
+  tooltip.style.left = `${rect.left}px`;
+  tooltip.style.top = `${rect.bottom + scrollTop + 5}px`;
+}
+
+const hideTooltip = () => {
+  const tooltips = document.querySelectorAll('.global-tooltip');
+  tooltips.forEach(tooltip => tooltip.remove());
+}
+
+// 组件卸载时清除所有tooltip
+onUnmounted(() => {
+  hideTooltip();
+});
+
 </script>
 
 <template>
@@ -141,12 +173,17 @@ const LookImg = (url) => {
         <!-- 显示序号 -->
         <td v-if="props.index">{{ index + 1 }}</td>
 <!--        数据展示-->
-        <td v-for="inner in props.useIndex">
-          <p v-if="props.imgColumn == inner" style="display: flex; align-items: center; justify-content: center; cursor: pointer" @click="LookImg(BaseUrl + item[inner])">
-            <img v-if="CheckImgExists(BaseUrl + item[inner])" :src="BaseUrl + item[inner]" style="width: 60px;">
-            <img v-else src="@/assets/no_data.png"  style="width: 60px;">
-          </p>
-          <p v-else>{{ item[inner] }}</p>
+        <td v-for="inner in props.useIndex" 
+            class="table-cell"
+            @mouseover="(e) => showTooltip(e, item[inner])"
+            @mouseout="hideTooltip">
+          <template v-if="props.imgColumn == inner">
+            <p style="display: flex; align-items: center; justify-content: center; cursor: pointer" @click="LookImg(BaseUrl + item[inner])">
+              <img v-if="CheckImgExists(BaseUrl + item[inner])" :src="BaseUrl + item[inner]" style="width: 60px;">
+              <img v-else src="@/assets/no_data.png"  style="width: 60px;">
+            </p>
+          </template>
+          <template v-else>{{ item[inner] }}</template>
         </td>
         <td>
           <button @click="edit(item)" class="text-button">{{ props.editBtn }}</button>
@@ -188,102 +225,182 @@ const LookImg = (url) => {
   </Dialog>
 </template>
 
+<style>
+/* 注意：这里不使用 scoped，使样式全局生效 */
+.global-tooltip {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 9999;
+  max-width: 300px;
+  word-wrap: break-word;
+  pointer-events: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+</style>
+
 <style scoped lang="scss">
 .body {
-  width: 98%;
-  height: 81vh;
-  background: white;
+  width: 100%;
+  min-height: 200px;
+  max-height: 85vh;
   margin: 20px auto;
-  border-radius: 5px;
-  box-shadow: 0 0 5px #dadada;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   overflow-y: auto;
   overflow-x: hidden;
-  font-size: smaller;
-  color: #606060;
+  font-size: 14px;
+  color: #444;
 
   table {
-    margin: 20px;
-    width: 98%;
-    line-height: 40px;
-    text-align: center;
+    width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
-    td {
-      border-top: 1px solid rgba(128, 128, 128, 0.2);
+    line-height: 1.5;
+    
+    th, td {
+      padding: 8px;
+      height: 40px !important;
+      line-height: 20px !important;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      width: auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+      
+      p {
+        height: 40px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        
+        img {
+          max-height: 36px !important;
+          width: auto;
+          object-fit: contain;
+        }
+      }
     }
-    tr:nth-child(even) {
-      background: rgb(248, 252, 255);
+
+    th {
+      height: 40px !important;
+      line-height: 20px !important;
+      font-weight: 500;
+      background: #f5f5f5;
+    }
+
+    tr {
+      &:hover {
+        background-color: #f5f7fa;
+      }
+    }
+
+    th:first-child,
+    td:first-child {
+      width: 60px;
+    }
+
+    th:last-child,
+    td:last-child {
+      width: 120px;
     }
   }
-}
-
-.body::-webkit-scrollbar {
-  width: 10px;
-}
-.body::-webkit-scrollbar-thumb {
-  background: rgba(174, 120, 219, 0.58);
-  border-radius: 5px;
-}
-.body::-webkit-scrollbar-track {
-
-  border-top-right-radius: 5px;
-  background: rgba(219, 240, 246, 0.73);
 }
 
 .paginate {
-  height: 30px;
-  width: 100%;
-  background: rgba(186, 232, 199, 0.34);
   display: flex;
-  justify-content: right;
-  margin-top: 20px;
-  text-align: center;
   align-items: center;
-  margin-bottom: 20px;
-  span {
-    margin-right: 50px;
-    display: inline-block;
-    a {
-      text-decoration: none;
-      color: pink;
+  justify-content: flex-end;
+  padding: 16px;
+  border-top: 1px solid #eee;
+  gap: 24px;
+
+  select {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    
+    &:hover {
+      border-color: #999;
     }
   }
-  select {
-    border-radius: 5px;
-    margin-right: 50px;
-    background: rgba(208, 232, 222, 0);
-    width: 150px;
-    height: 30px;
-    border: 1px solid #e5d921;
+
+  div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    span {
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      
+      &:hover:not(.light) {
+        background: #f5f5f5;
+      }
+      
+      &.light {
+        background: #e3f2fd;
+        color: #1976d2;
+      }
+    }
+  }
+
+  .goto {
+    width: 80px;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+    
+    &:focus {
+      border-color: #999;
+      outline: none;
+    }
   }
 }
 
 .text-button {
+  padding: 4px 8px;
   border: none;
   background: none;
+  color: #1976d2;
   cursor: pointer;
-  color: #4395F9;
-}
-.text-button:hover {
-  opacity: 0.7;
-}
-
-.goto {
-  width: 110px;
-  height: 25px;
-  margin-right: 50px;
-  margin-left: -30px;
-  border: 1px solid #c5c5c5;
-  border-radius: 5px;
+  border-radius: 4px;
+  
+  &:hover {
+    background: #e3f2fd;
+  }
+  
+  & + & {
+    margin-left: 8px;
+  }
 }
 
-.link {
-  cursor: pointer;
-  margin: 10px -10px;
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
 }
 
-.light {
-  color: #4395F9;
+.table-cell {
+  position: relative;
+  cursor: default;
 }
 
-
+table {
+  td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 0;
+  }
+}
 </style>
